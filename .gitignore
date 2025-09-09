@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+build/
+**/build/
+dist/
+**/dist/
+.svelte-kit/
+**/.svelte-kit/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Package manager lockfiles (keep pnpm-lock.yaml but ignore others)
+package-lock.json
+yarn.lock
