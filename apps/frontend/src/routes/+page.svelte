@@ -43,7 +43,6 @@
       Static frontend calling separate backend. Perfect for mobile apps, CDN
       deployments, and serverless architectures.
     </p>
-
   </div>
 
   <!-- Animated background -->
@@ -225,13 +224,23 @@
           </div>
           <div class="limitation-note">
             <p>
-              ℹ️ <strong>Expected behavior</strong>: Prerender functions currently fail cross-origin due to service worker limitations.
+              ℹ️ <strong>Expected behavior</strong>: Prerender functions
+              currently fail cross-origin due to service worker limitations.
             </p>
             <p>
-              <a href="https://github.com/robinbraemer/sveltekit-static-to-remote#%EF%B8%8F-known-limitation-prerender-cross-origin" target="_blank" rel="noopener">
+              <a
+                href="https://github.com/robinbraemer/sveltekit-static-to-remote#%EF%B8%8F-known-limitation-prerender-cross-origin"
+                target="_blank"
+                rel="noopener"
+              >
                 📖 Read about this limitation
-              </a> • 
-              <a href="https://github.com/robinbraemer/sveltekit-static-to-remote/issues" target="_blank" rel="noopener">
+              </a>
+              •
+              <a
+                href="https://github.com/robinbraemer/sveltekit-static-to-remote/issues"
+                target="_blank"
+                rel="noopener"
+              >
                 🚀 PRs welcome to fix
               </a>
             </p>
@@ -322,7 +331,6 @@
     line-height: 1.6;
     animation: fadeInUp 0.8s ease-out 0.4s both;
   }
-
 
   .error-state {
     display: flex;
