@@ -121,6 +121,7 @@ cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 <summary><strong>🚀 Test cross-origin functionality without signup using Surge.sh + Cloudflare Tunnel</strong></summary>
 
 ### **📦 Prerequisites**
+
 ```bash
 # Install tools (no accounts needed)
 pnpm install -g surge
@@ -130,16 +131,30 @@ pnpm install -g surge
 ### **🎯 Quick Deployment Test**
 
 <details>
-<summary><strong>Step 1: Configure Backend CORS</strong></summary>
+<summary><strong>Step 1: Configure Backend for Production</strong></summary>
 
 ```bash
-# Add your test domain to backend CORS
+# 1. Add your test domain to CORS
 # Edit: apps/backend/src/hooks.server.ts
 const ALLOWED_ORIGINS = [
   // ... existing origins
   'https://your-test-domain.surge.sh', // Add your chosen domain
 ];
+
+# 2. Allow Cloudflare tunnel domains
+# Edit: apps/backend/vite.config.js
+export default {
+  server: {
+    allowedHosts: [
+      'localhost',
+      '.trycloudflare.com', // Allow any trycloudflare subdomain
+    ]
+  }
+};
 ```
+
+**💡 Enables curl testing**: `curl -i https://xxx.trycloudflare.com/_app/version.json`
+
 </details>
 
 <details>
@@ -153,6 +168,7 @@ cloudflared tunnel --url http://localhost:5174
 
 # 📋 Copy the https://xxx.trycloudflare.com URL (appears in terminal)
 ```
+
 </details>
 
 <details>
@@ -168,14 +184,27 @@ pnpm build
 surge ./build
 # 🌐 Choose domain: your-test-domain.surge.sh
 ```
+
 </details>
 
 ### **🧪 Expected Results**
+
 - **✅ Query/Form/Command**: Cross-origin requests working
 - **❌ Prerender**: CORS failures (documented limitation)
 - **✅ Service Worker**: Console logs show interception
 
-**🎯 This validates real production cross-origin scenarios!**
+### **🔧 Quick Validation with Curl**
+```bash
+# Test OPTIONS preflight (should return 204 with CORS headers)
+curl -i -H "Origin: https://your-test.surge.sh" \
+  -X OPTIONS \
+  https://xxx.trycloudflare.com/_app/remote/13eoo5e/toUpper
+
+# Test backend health (should return 200 OK)
+curl -i https://xxx.trycloudflare.com/_app/version.json
+```
+
+**🎯 This validates real production cross-origin scenarios without browser testing!**
 
 </details>
 
