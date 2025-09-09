@@ -11,6 +11,7 @@
 /// <reference types="../.svelte-kit/ambient.d.ts" />
 
 import { build, files, version } from '$service-worker';
+import { PUBLIC_BACKEND_HOST, PUBLIC_BACKEND_INSECURE } from '$env/static/public';
 
 // This gives `self` the correct types
 const self = globalThis.self as unknown as ServiceWorkerGlobalScope;
@@ -28,9 +29,9 @@ self.addEventListener('activate', (event) => {
 
 // Switch this to your production domain like api.example.com.
 // For now this is the backend dev server.
-const productionHost = 'localhost:5174';
+const productionHost = PUBLIC_BACKEND_HOST || 'localhost:5174';
 // Switch this to true if your production domain has TLS.
-const productionSecure = !dev;
+const productionSecure = !PUBLIC_BACKEND_INSECURE || !dev;
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
