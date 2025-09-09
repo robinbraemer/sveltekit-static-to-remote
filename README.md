@@ -99,7 +99,7 @@ cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 ### 📊 **Prerender** - Build-time Static
 
 - **Purpose**: Static data generated at build time
-- **Example**: App info, stats, configuration  
+- **Example**: App info, stats, configuration
 - **Status**: ❌ **Currently unsupported cross-origin** (service worker cannot reach backend during static serving)
 
 ---

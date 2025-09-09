@@ -67,12 +67,15 @@ test('prerender behavior validation', async ({ page }) => {
   // Track all network requests to see if prerender calls backend
   const networkRequests = [];
   const backendCalls = [];
-  
+
   page.on('request', (req) => {
     const url = req.url();
     networkRequests.push({ method: req.method(), url });
-    
-    if (url.includes('localhost:5174') || url.includes('/_app/remote/') && url.includes('/getAppInfo')) {
+
+    if (
+      url.includes('localhost:5174') ||
+      (url.includes('/_app/remote/') && url.includes('/getAppInfo'))
+    ) {
       backendCalls.push({ method: req.method(), url, timestamp: Date.now() });
       console.log(`[PRERENDER] Backend call detected: ${req.method()} ${url}`);
     }
@@ -82,7 +85,11 @@ test('prerender behavior validation', async ({ page }) => {
     const url = res.url();
     if (url.includes('getAppInfo')) {
       console.log(`[PRERENDER] Response: ${res.status()} for ${url}`);
-      console.log(`[PRERENDER] Headers: access-control-allow-origin = "${res.headers()['access-control-allow-origin'] || 'undefined'}"`);
+      console.log(
+        `[PRERENDER] Headers: access-control-allow-origin = "${
+          res.headers()['access-control-allow-origin'] || 'undefined'
+        }"`
+      );
     }
   });
 
@@ -95,28 +102,44 @@ test('prerender behavior validation', async ({ page }) => {
 
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  await page.waitForFunction(() => 'serviceWorker' in navigator && navigator.serviceWorker.controller);
-  
+  await page.waitForFunction(
+    () => 'serviceWorker' in navigator && navigator.serviceWorker.controller
+  );
+
   // Wait for prerender data to load/fail
   await page.waitForTimeout(3000);
-  
+
   // Check if prerender card shows data
   const prerenderCard = page.locator('.prerender-card');
-  const hasAppName = await prerenderCard.getByText('SvelteKit Static-to-Remote Demo').isVisible().catch(() => false);
-  const hasErrorState = await prerenderCard.getByText(/Error|Failed|Loading/).isVisible().catch(() => false);
-  
+  const hasAppName = await prerenderCard
+    .getByText('SvelteKit Static-to-Remote Demo')
+    .isVisible()
+    .catch(() => false);
+  const hasErrorState = await prerenderCard
+    .getByText(/Error|Failed|Loading/)
+    .isVisible()
+    .catch(() => false);
+
   console.log(`[PRERENDER] App name visible: ${hasAppName}`);
   console.log(`[PRERENDER] Error state visible: ${hasErrorState}`);
   console.log(`[PRERENDER] Total network requests: ${networkRequests.length}`);
-  console.log(`[PRERENDER] Backend calls to getAppInfo: ${backendCalls.length}`);
-  
+  console.log(
+    `[PRERENDER] Backend calls to getAppInfo: ${backendCalls.length}`
+  );
+
   if (backendCalls.length > 0) {
-    console.log('❌ ASSUMPTION INVALID: Prerender IS calling backend at runtime (not using cache)');
+    console.log(
+      '❌ ASSUMPTION INVALID: Prerender IS calling backend at runtime (not using cache)'
+    );
     console.log(`[PRERENDER] Backend calls:`, backendCalls);
   } else if (hasAppName) {
-    console.log('✅ ASSUMPTION VALID: Prerender using cached data (no backend calls)');
+    console.log(
+      '✅ ASSUMPTION VALID: Prerender using cached data (no backend calls)'
+    );
   } else if (hasErrorState) {
-    console.log('⚠️ ASSUMPTION PARTIAL: Prerender failing due to CORS/network issues');
+    console.log(
+      '⚠️ ASSUMPTION PARTIAL: Prerender failing due to CORS/network issues'
+    );
   } else {
     console.log('🤔 UNCLEAR: Prerender behavior unclear - investigate further');
   }
