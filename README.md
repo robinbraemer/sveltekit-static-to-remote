@@ -1,371 +1,227 @@
 # 🚀 SvelteKit Static-to-Remote
 
 <div align="center">
-  <h3>Call SvelteKit remote functions from a static frontend to a separate backend deployment</h3>
-  
-  [![Demo](https://img.shields.io/badge/🎯-Live%20Demo-blue)](https://github.com/robinbraemer/sveltekit-static-to-remote)
-  [![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?logo=svelte&logoColor=white)](https://svelte.dev/docs/kit/remote-functions)
-  [![Mobile](https://img.shields.io/badge/📱-Mobile%20Ready-green)](#mobile-apps)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](#tech-stack)
+
+**Call SvelteKit remote functions from a static frontend to a separate backend deployment**
+
+[![Demo](https://img.shields.io/badge/🎯-Live%20Demo-blue)](https://github.com/robinbraemer/sveltekit-static-to-remote)
+[![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?logo=svelte&logoColor=white)](https://svelte.dev/docs/kit/remote-functions)
+[![Mobile](https://img.shields.io/badge/📱-Mobile%20Ready-green)](#mobile-apps)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](#tech-stack)
+
 </div>
 
 ---
 
-## ⚡ **TLDR**
+## ⚡ TLDR
 
-<table>
-<tr>
-<td><strong>🎯 Problem</strong></td>
-<td>SvelteKit remote functions only work within the same deployment</td>
-</tr>
-<tr>
-<td><strong>💡 Solution</strong></td>
-<td>Service worker magic + CORS = seamless cross-deployment calls</td>
-</tr>
-<tr>
-<td><strong>🎯 Perfect For</strong></td>
-<td>Static sites • Mobile apps (Tauri/Capacitor) • CDN deployments • Serverless</td>
-</tr>
-</table>
+**🎯 Problem**: SvelteKit remote functions only work within the same deployment, but you want static frontend + separate backend.
 
-### **How It Works:**
+**💡 Solution**: Service worker magic!
 
-1. 📁 **Same file paths** in both apps → **identical endpoint hashes**
-2. 🔀 **Service worker** intercepts `/_app/remote/[HASH]/call` → redirects to backend
-3. 🌐 **Backend CORS** handles cross-origin requests securely
-4. ✨ **Result**: Seamless remote function calls across deployments!
+1. **Same file paths** in both apps → **identical endpoint hashes**
+2. **Service worker** intercepts `/_app/remote/[HASH]/call` → redirects to backend  
+3. **Backend CORS** handles cross-origin requests securely
+4. **Result**: Seamless remote function calls across deployments! ✨
+
+**Perfect for**: Static sites • Mobile apps (Tauri/Capacitor) • CDN deployments • Serverless architectures
 
 ---
 
-## 🚀 **Quick Start**
+## 🚀 Quick Start
 
 ```bash
-# 📥 Clone and install
+# Clone and install
 git clone https://github.com/robinbraemer/sveltekit-static-to-remote.git
 cd sveltekit-static-to-remote && pnpm install
 
-# 🖥️ Start backend (terminal 1)
+# Start backend (terminal 1)
 cd apps/backend && pnpm dev  # http://localhost:5174
 
-# 🌐 Build and serve frontend (terminal 2)
+# Build and serve frontend (terminal 2)  
 cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 ```
 
-**🧪 Test**: Open http://localhost:3000 → try the form, buttons, text converter → functions execute on backend!
+**🧪 Test**: Open <http://localhost:3000> → try the form, buttons, text converter → functions execute on backend!
 
 ---
 
-## 🏗️ **Architecture**
+## 🔧 How It Works
 
-<table>
-<tr>
-<th width="33%">📁 Frontend (Static)</th>
-<th width="33%">🔀 Service Worker</th>
-<th width="33%">🖥️ Backend (Server)</th>
-</tr>
-<tr>
-<td>
+**The Secret**: SvelteKit generates remote function hashes based on **file paths**, not code.
 
-**Static Build**
+1. **Same file paths** (`src/lib/all.remote.ts`) in both apps → **identical hashes**
+2. **Service worker** ([`service-worker.ts`](apps/frontend/src/service-worker.ts)) intercepts `/_app/remote/[HASH]/call`
+3. **Redirects** to backend server with custom `X-SvelteKit-Remote` header
+4. **Backend CORS** ([`hooks.server.ts`](apps/backend/src/hooks.server.ts)) allows cross-origin calls
+5. **Backend** recognizes hash → executes function → returns result
 
-- `adapter-static`
-- Calls `/_app/remote/[HASH]/*`
-- Deployable to CDN
-- Mobile app ready
+**This means**: Static app calls non-existent endpoints → service worker intercepts → backend executes → seamless API!
 
-</td>
-<td>
+> **Note**: Query, form, and command functions work perfectly. Prerender functions work but currently bypass caching (call backend at runtime instead of using build-time cached data).
 
-**Request Interception**
+---
 
-- Intercepts remote calls
-- Forwards to backend
-- Handles CORS headers
-- Preserves cookies
+## 📂 Implementation
 
-</td>
-<td>
+**Core Files:**
+- 🔀 **Service Worker**: [`service-worker.ts`](apps/frontend/src/service-worker.ts) - Intercepts and forwards remote calls
+- 🌐 **CORS Handler**: [`hooks.server.ts`](apps/backend/src/hooks.server.ts) - Handles cross-origin requests securely  
+- ⚡ **Remote Functions**: [`api.ts`](apps/backend/src/lib/server/api.ts) - Query, form, command, prerender implementations
 
-**Function Execution**
-
-- Recognizes hashes
-- Executes functions
-- Returns results
-- Handles validation
-
-</td>
-</tr>
-</table>
-
-### 🔧 **Core Implementation Files**
-
-| Component               | File                                                       | Purpose                                         |
-| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
-| 🔀 **Service Worker**   | [`service-worker.ts`](apps/frontend/src/service-worker.ts) | Intercepts and forwards remote calls            |
-| 🌐 **CORS Handler**     | [`hooks.server.ts`](apps/backend/src/hooks.server.ts)      | Handles cross-origin requests securely          |
-| ⚡ **Remote Functions** | [`api.ts`](apps/backend/src/lib/server/api.ts)             | Query, form, command, prerender implementations |
+**Key Pattern**: Use **identical file paths** (`src/lib/all.remote.ts`) in both apps to ensure matching hashes.
 
 > **📝 Note on Remote File Structure**: We use a single `all.remote.ts` file to re-export all remote functions for simplicity. You _could_ have multiple remote files like `lib/users.remote.ts`, `lib/orders.remote.ts`, etc., but you'd need to ensure each file exists at the **exact same path** in both apps (since the hash is based on file path). Using a single `all.remote.ts` file simplifies maintenance and reduces the chance of path mismatches between frontend and backend.
 
 ---
 
-## 🎯 **Remote Function Types Demo**
+## 🎯 Demo: All 4 Remote Function Types
 
-Our demo showcases all four SvelteKit remote function types:
+### 🔍 **Query** - Dynamic Data
+- **Purpose**: Real-time backend data fetching
+- **Example**: Text converter with instant transformation
+- **Features**: Type-safe responses, reactive loading states
 
-<table>
-<tr>
-<th width="25%">🔍 Query</th>
-<th width="25%">📝 Form</th>  
-<th width="25%">⚡ Command</th>
-<th width="25%">📊 Prerender</th>
-</tr>
-<tr>
-<td>
+### 📝 **Form** - Progressive Enhancement  
+- **Purpose**: Type-safe form submissions
+- **Example**: Contact form with validation
+- **Features**: Works without JS, built-in reactive states (`.pending`, `.result`)
 
-**Dynamic Data**
+### ⚡ **Command** - Fire & Forget
+- **Purpose**: Server actions without return data
+- **Example**: Activity logging, analytics tracking  
+- **Features**: Instant feedback, no response data
 
-- Text converter
-- Real-time backend calls
-- Type-safe responses
-- Reactive loading states
-
-</td>
-<td>
-
-**Progressive Enhancement**
-
-- Contact form
-- Works without JS
-- Built-in validation
-- Success/error feedback
-
-</td>
-<td>
-
-**Fire & Forget**
-
-- Activity logging
-- No return data
-- Analytics tracking
-- Instant feedback
-
-</td>
-<td>
-
-**Build-time Static**
-
-- App info/stats
-- Generated at build
-- CDN cacheable
-- ⚠️ _[Caching needs fix]_
-
-</td>
-</tr>
-</table>
+### 📊 **Prerender** - Build-time Static
+- **Purpose**: Static data generated at build time
+- **Example**: App info, stats, configuration
+- **Status**: ⚠️ Works but needs Cache API integration fix
 
 ---
 
-## ⚠️ **Known Limitation: Prerender Caching**
+## ⚠️ Known Limitation: Prerender Caching
 
-| Status                 | Description                                                |
-| ---------------------- | ---------------------------------------------------------- |
-| ✅ **Build Time**      | Prerender functions ARE called during backend build        |
-| ✅ **Functionality**   | Functions work and return correct data                     |
-| ❌ **Runtime Caching** | Static app calls backend instead of using cached data      |
-| 🔧 **Needs Fix**       | Service worker should integrate with SvelteKit's Cache API |
+**What Works**: ✅ Prerender functions ARE called during backend build time  
+**What's Missing**: ❌ Static app calls backend instead of using cached build-time data  
+
+**Root Cause**: Service worker intercepts SvelteKit's Cache API lookups, preventing proper prerender caching behavior.
 
 **🚀 PRs Welcome!** Help improve Cache API integration for true prerender performance benefits.
 
 ---
 
-## 🔧 **Configuration**
+## 🔧 Configuration
 
-<details>
-<summary><strong>🌐 Frontend Service Worker</strong></summary>
-
+### Frontend Service Worker
 **File**: [`apps/frontend/src/service-worker.ts`](apps/frontend/src/service-worker.ts)
 
 ```typescript
-// Switch this to your production domain
-const productionHost = 'api.yourdomain.com';
+const productionHost = 'api.yourdomain.com'; // Your backend domain
 const productionSecure = true; // true for HTTPS
 ```
 
-</details>
-
-<details>
-<summary><strong>🛡️ Backend CORS Setup</strong></summary>
-
+### Backend CORS Setup
 **File**: [`apps/backend/src/hooks.server.ts`](apps/backend/src/hooks.server.ts)
 
 ```typescript
 const ALLOWED_ORIGINS = [
-  'http://localhost:5173', // frontend dev
-  'http://localhost:3000', // frontend serve
-  'https://yourdomain.com', // production frontend
-  'capacitor://localhost', // Capacitor iOS
-  'http://localhost', // Capacitor Android
-  'tauri://localhost', // Tauri desktop
+  'http://localhost:5173',     // frontend dev
+  'http://localhost:3000',     // frontend serve
+  'https://yourdomain.com',    // production frontend
+  'capacitor://localhost',     // Capacitor iOS
+  'http://localhost',          // Capacitor Android
+  'tauri://localhost'          // Tauri desktop
 ];
 ```
 
-</details>
+### Mobile Apps (Tauri/Capacitor)
 
-<details>
-<summary><strong>📱 Mobile Apps (Tauri/Capacitor)</strong></summary>
-
-**Additional Setup:**
-
-- Add mobile origins to `ALLOWED_ORIGINS` (see above)
+**Additional setup for mobile apps:**
+- Add mobile origins to `ALLOWED_ORIGINS` (see above)  
 - Set `productionHost` to your API server domain
 - Use HTTPS in production (`productionSecure: true`)
 - Mobile apps cache static build but call live backend functions
 
-</details>
+---
+
+## 🚀 Deployment
+
+**📦 Frontend (Static)**
+- Vercel, Netlify, GitHub Pages → Deploy `build/` folder
+- Any CDN or static hosting service
+- Mobile frameworks: Tauri (desktop), Capacitor (iOS/Android), Electron
+
+**🖥️ Backend (Server)**  
+- Railway, Fly.io, VPS → Deploy with Node.js
+- Vercel Functions, Netlify Functions → Deploy as serverless
+- Any container or traditional server
+
+**📱 Mobile Advantage**: Tauri and Capacitor require static builds since they bundle your web app into native containers. This technique lets you keep heavy backend logic on servers while maintaining elegant remote function APIs!
 
 ---
 
-## 🚀 **Deployment Examples**
+## 🛠️ Troubleshooting
 
-<table>
-<tr>
-<th>🌐 Static Frontend</th>
-<th>🖥️ Backend Server</th>
-</tr>
-<tr>
-<td>
-
-**CDN/Static Hosting:**
-
-- Vercel (`build/` folder)
-- Netlify (same)
-- GitHub Pages (same)
-- Any CDN
-
-**Mobile Apps:**
-
-- Tauri (Rust + Web)
-- Capacitor (iOS/Android)
-- Electron (Desktop)
-
-</td>
-<td>
-
-**Traditional Servers:**
-
-- Railway (Node.js)
-- Fly.io (Docker)
-- Any VPS
-
-**Serverless:**
-
-- Vercel Functions
-- Netlify Functions
-- AWS Lambda
-
-</td>
-</tr>
-</table>
+- **Service worker not working?** DevTools → Application → Service Workers → Update + reload
+- **CORS errors?** Add your frontend origin to `ALLOWED_ORIGINS` in backend hook  
+- **JSON parsing errors?** Backend hook handles OPTIONS preflight (already included)
+- **Prerender called at runtime?** Known limitation - Cache API integration needs improvement
 
 ---
 
-## 🛠️ **Troubleshooting**
+## 🎉 Benefits
 
-<table>
-<tr>
-<th>❌ Issue</th>
-<th>🔧 Solution</th>
-</tr>
-<tr>
-<td>Service worker not working</td>
-<td>DevTools → Application → Service Workers → Update + reload</td>
-</tr>
-<tr>
-<td>CORS policy errors</td>
-<td>Add your frontend origin to <code>ALLOWED_ORIGINS</code></td>
-</tr>
-<tr>
-<td>JSON parsing errors</td>
-<td>Backend hook handles OPTIONS (already included)</td>
-</tr>
-<tr>
-<td>Prerender called at runtime</td>
-<td>Known limitation - Cache API integration needs improvement</td>
-</tr>
-</table>
+- ✅ **Elegant API**: Use SvelteKit's remote functions instead of manual fetch
+- ✅ **Type Safety**: Full TypeScript support across frontend/backend
+- ✅ **Separate Deployments**: Frontend and backend deploy independently
+- ✅ **Static Hosting**: CDN/GitHub Pages compatible
+- ✅ **Mobile Ready**: Perfect for Tauri/Capacitor apps
+- ⚠️ **Prerender Functions**: Work but need Cache API integration improvements
 
 ---
 
-## 🎉 **Benefits**
+## 📚 Technical Deep Dive
 
-<div align="center">
+**The Hash Secret**: SvelteKit generates endpoint hashes based on **file paths**, not code content.
 
-| ✅ **What Works Perfectly**                             | ⚠️ **Known Limitations**                            |
-| :------------------------------------------------------ | :-------------------------------------------------- |
-| **Query Functions** - Real-time data fetching           | **Prerender Caching** - Needs Cache API integration |
-| **Form Functions** - Progressive enhancement            |                                                     |
-| **Command Functions** - Fire & forget actions           |                                                     |
-| **Type Safety** - Full TypeScript support               |                                                     |
-| **Separate Deployments** - Independent frontend/backend |                                                     |
-| **Mobile Ready** - Perfect for Tauri/Capacitor          |                                                     |
-| **Static Hosting** - CDN/GitHub Pages compatible        |                                                     |
-
-</div>
-
----
-
-## 📚 **Technical Details**
-
-<details>
-<summary><strong>🧠 How the Hash System Works</strong></summary>
-
-**The Secret**: SvelteKit generates endpoint hashes based on **file paths**, not code content.
-
-**SvelteKit Source References:**
-
-- [Hash function](https://github.com/sveltejs/kit/blob/main/packages/kit/src/utils/hash.js)
-- [Manifest generation](https://github.com/sveltejs/kit/blob/main/packages/kit/src/core/sync/create_manifest_data/index.js)
-
-**Why This Works:**
-
-```js
-// Both apps have: src/lib/all.remote.ts
-// SvelteKit generates: hash('src/lib/all.remote.ts') = 'ABC123'
-// Frontend calls: /_app/remote/ABC123/call
-// Backend serves: /_app/remote/ABC123/call
-// Service worker: localhost:5173 → localhost:5174 (same path!)
+```javascript
+// SvelteKit source (simplified):
+remotes.push({
+  hash: hash(filePath),    // Hash of file path
+  file: filePath           // e.g., "src/lib/all.remote.ts" 
+});
 ```
 
-</details>
+**Why This Works**:
+- Both apps use `src/lib/all.remote.ts` → same hash → same endpoint
+- Frontend calls `/_app/remote/ABC123/call` (doesn't exist locally)  
+- Service worker intercepts → forwards to `backend.com/_app/remote/ABC123/call`
+- Backend recognizes hash `ABC123` → executes function → returns result
+
+**Service Worker Flow**:
+1. Clone original request to preserve body streams
+2. Add `X-SvelteKit-Remote` header for backend detection
+3. Forward with preserved cookies, referrer, and metadata
+4. Handle POST body buffering to avoid stream consumption issues
 
 ---
 
-## 🛠️ **Tech Stack**
-
-<div align="center">
-
-![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Service Workers](https://img.shields.io/badge/Service%20Workers-000000?style=for-the-badge&logo=pwa&logoColor=white)
-![PNPM](https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
-
-</div>
+## 🛠️ Tech Stack
 
 - **SvelteKit** - Remote functions framework
-- **TypeScript** - Type safety across deployments
+- **TypeScript** - Type safety across deployments  
 - **Service Workers** - Request interception and forwarding
 - **Zod** - Request/response validation
 - **PNPM** - Efficient monorepo management
 
 ---
 
-## 📖 **References**
+## 📖 References
 
-- [📚 SvelteKit Remote Functions](https://svelte.dev/docs/kit/remote-functions)
-- [🔧 SvelteKit Service Workers](https://svelte.dev/docs/kit/service-workers)
-- [⚙️ Remote Functions Hashing Source](https://github.com/sveltejs/kit/blob/main/packages/kit/src/core/sync/create_manifest_data/index.js)
-- [🧮 Hash Function Source](https://github.com/sveltejs/kit/blob/main/packages/kit/src/utils/hash.js)
+- [SvelteKit Remote Functions](https://svelte.dev/docs/kit/remote-functions)
+- [Service Workers Documentation](https://svelte.dev/docs/kit/service-workers)  
+- [Remote Functions Hashing Source](https://github.com/sveltejs/kit/blob/main/packages/kit/src/core/sync/create_manifest_data/index.js)
+- [Hash Function Implementation](https://github.com/sveltejs/kit/blob/main/packages/kit/src/utils/hash.js)
 
 ---
 
@@ -373,8 +229,8 @@ const ALLOWED_ORIGINS = [
 
 **Made with ❤️ by [Robin Braemer](https://github.com/robinbraemer)**
 
-_Building bridges between static frontends and dynamic backends_
+*Building bridges between static frontends and dynamic backends*
 
-[⭐ Star this repo](https://github.com/robinbraemer/sveltekit-static-to-remote) • [🍴 Fork it](https://github.com/robinbraemer/sveltekit-static-to-remote/fork) • [💬 Discuss](https://github.com/robinbraemer/sveltekit-static-to-remote/discussions)
+[⭐ Star](https://github.com/robinbraemer/sveltekit-static-to-remote) • [🍴 Fork](https://github.com/robinbraemer/sveltekit-static-to-remote/fork) • [💬 Discuss](https://github.com/robinbraemer/sveltekit-static-to-remote/discussions)
 
 </div>
