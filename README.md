@@ -115,40 +115,109 @@ cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 
 ---
 
+## 🌐 Production Testing (No Signup Required)
+
+<details>
+<summary><strong>🚀 Test cross-origin functionality without signup using Surge.sh + Cloudflare Tunnel</strong></summary>
+
+### **📦 Prerequisites**
+```bash
+# Install tools (no accounts needed)
+pnpm install -g surge
+# Install cloudflared: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+```
+
+### **🎯 Quick Deployment Test**
+
+<details>
+<summary><strong>Step 1: Configure Backend CORS</strong></summary>
+
+```bash
+# Add your test domain to backend CORS
+# Edit: apps/backend/src/hooks.server.ts
+const ALLOWED_ORIGINS = [
+  // ... existing origins
+  'https://your-test-domain.surge.sh', // Add your chosen domain
+];
+```
+</details>
+
+<details>
+<summary><strong>Step 2: Start Backend + Tunnel</strong></summary>
+
+```bash
+# Terminal 1: Backend with public tunnel
+cd apps/backend
+pnpm build && node build/index.js &
+cloudflared tunnel --url http://localhost:5174
+
+# 📋 Copy the https://xxx.trycloudflare.com URL (appears in terminal)
+```
+</details>
+
+<details>
+<summary><strong>Step 3: Deploy Frontend</strong></summary>
+
+```bash
+# Terminal 2: Configure & deploy frontend
+cd apps/frontend
+echo 'PUBLIC_BACKEND_HOST="xxx.trycloudflare.com"' > .env
+echo 'PUBLIC_BACKEND_INSECURE="false"' >> .env
+
+pnpm build
+surge ./build
+# 🌐 Choose domain: your-test-domain.surge.sh
+```
+</details>
+
+### **🧪 Expected Results**
+- **✅ Query/Form/Command**: Cross-origin requests working
+- **❌ Prerender**: CORS failures (documented limitation)
+- **✅ Service Worker**: Console logs show interception
+
+**🎯 This validates real production cross-origin scenarios!**
+
+</details>
+
+---
+
 ## 🧪 Testing
 
 **Comprehensive test suite with automated validation:**
 
 ```bash
-# Run all tests  
+# Run all tests
 pnpm test:all  # Builds + API tests + E2E tests
 
 # Individual test suites
-pnpm test     # API tests (Vitest) 
+pnpm test     # API tests (Vitest)
 pnpm e2e      # Browser tests (Playwright)
 ```
 
 ### 📊 **Test Coverage:**
 
-- **✅ API Tests** (`apps/tests/src/api/`): 
+- **✅ API Tests** (`apps/tests/src/api/`):
+
   - CORS validation for all remote function types
   - Cross-origin request/response verification
   - Backend server integration testing
 
 - **✅ E2E Tests** (`apps/tests/src/e2e/`):
-  - **3 browsers tested**: Chrome, Firefox, Safari  
+
+  - **3 browsers tested**: Chrome, Firefox, Safari
   - Service worker functionality validation
   - Complete user interaction flows
   - Network request tracking and analysis
 
 - **✅ Infrastructure Tests**:
   - Automated build and serve setup
-  - Robust timeout and cleanup handling  
+  - Robust timeout and cleanup handling
   - Process management (no hanging tests)
 
 ### 🎯 **Test Results:**
+
 - **API Tests**: 3/4 pass (prerender limitation documented)
-- **E2E Tests**: 3/3 browsers pass  
+- **E2E Tests**: 3/3 browsers pass
 - **Service Worker**: ✅ Intercepts all remote calls correctly
 - **Cross-Origin**: ✅ Query/Form/Command work perfectly
 

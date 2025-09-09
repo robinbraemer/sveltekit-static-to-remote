@@ -1,6 +1,8 @@
 import type { Handle } from '@sveltejs/kit';
 
+// Update this!
 const ALLOWED_ORIGINS = [
+  'https://sveltekit-static-to-remote.surge.sh', // testing with surge
   'http://localhost:5173', // frontend dev
   'http://localhost:3000', // frontend serve
   'http://localhost:3010', // tests serve
