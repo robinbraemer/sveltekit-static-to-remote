@@ -14,6 +14,7 @@
 
 https://github.com/user-attachments/assets/dae1146a-9391-4ab9-911e-b951b2fe7942
 
+In this demo, the static frontend example is deployed on Surge CDN, while the backend is running locally and exposed through a Cloudflare tunnel. You can see that the remote functions are calling the backend URL instead of the frontend URL.
 
 ---
 
