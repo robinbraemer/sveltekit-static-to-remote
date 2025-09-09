@@ -36,19 +36,24 @@ export const createMessage = form(async (data) => {
 });
 
 // 3. COMMAND - Perform actions without returning data to client
-export const logActivity = command(z.string(), async (action) => {
-  console.log('backend: Activity logged:', action);
+export const logActivity = command(
+  z.string().optional().default('unknown'),
+  async (action) => {
+    console.log('backend: Activity logged:', action);
 
-  // Simulate analytics/monitoring
-  await new Promise((resolve) => setTimeout(resolve, 100));
+    // Simulate analytics/monitoring
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-  // Commands don't return data to client
-});
+    // Commands don't return data to client
+  }
+);
 
 // 4. PRERENDER - Static data generated at build time
 export const getAppInfo = prerender(async () => {
   console.log('backend: Generating app info at build time');
-  console.log('You might see this in frontend console but prerender will only be called server-side at build/dev time.')
+  console.log(
+    'You might see this in frontend console but prerender will only be called server-side at build/dev time.'
+  );
 
   return {
     name: 'SvelteKit Static-to-Remote Demo',

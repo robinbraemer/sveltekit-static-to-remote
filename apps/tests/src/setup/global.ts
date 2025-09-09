@@ -52,7 +52,9 @@ export default async function setup() {
     timeoutMs: number
   ) {
     return new Promise<void>((resolve, reject) => {
-      const p = spawn(cmd, args, { cwd, stdio: 'inherit' });
+      console.log(`[build] Starting ${cmd} ${args.join(' ')} in ${cwd}`);
+      // Use 'pipe' to avoid stdio mixing and encoding corruption
+      const p = spawn(cmd, args, { cwd, stdio: 'pipe' });
       const timer = setTimeout(() => {
         console.error(`[timeout] ${cmd} ${args.join(' ')} in ${cwd}`);
         p.kill('SIGTERM');
@@ -60,28 +62,40 @@ export default async function setup() {
       }, timeoutMs);
       p.on('exit', (code) => {
         clearTimeout(timer);
-        code === 0
-          ? resolve()
-          : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`));
+        if (code === 0) {
+          console.log(`[build] ✅ ${cmd} ${args.join(' ')} completed`);
+          resolve();
+        } else {
+          reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`));
+        }
       });
     });
   }
 
-  // Build once
+  // Build sequentially to avoid stdio corruption
+  console.log('[setup] Building backend...');
   const backendDir = `${root}apps/backend`;
   await runWithTimeout('pnpm', ['build'], backendDir, BUILD_TIMEOUT_MS);
+  
+  console.log('[setup] Starting backend server...');
   backendProc = spawn('node', ['build/index.js'], {
     cwd: backendDir,
     env: { ...process.env, PORT: '5174' },
-    stdio: 'inherit',
+    stdio: 'pipe', // Prevent encoding issues
   });
   await waitOk('http://localhost:5174/_app/version.json', START_TIMEOUT_MS);
 
+  // Small delay to ensure backend is fully ready
+  await delay(1000);
+
+  console.log('[setup] Building frontend...');
   const frontendDir = `${root}apps/frontend`;
   await runWithTimeout('pnpm', ['build'], frontendDir, BUILD_TIMEOUT_MS);
+  
+  console.log('[setup] Starting frontend server...');
   frontendProc = spawn('pnpm', ['dlx', 'serve', 'build', '-l', '3010'], {
     cwd: frontendDir,
-    stdio: 'inherit',
+    stdio: 'pipe', // Prevent encoding issues
   });
   await waitOk('http://localhost:3010', START_TIMEOUT_MS);
 

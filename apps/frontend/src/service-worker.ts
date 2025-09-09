@@ -58,37 +58,45 @@ self.addEventListener('fetch', (event) => {
       };
 
       if (req.method !== 'GET' && req.method !== 'HEAD') {
-        // Use text() instead of blob() to avoid encoding issues
-        const bodyText = await req.text();
-        init.body = bodyText || null;
+        // Use arrayBuffer for binary-safe forwarding, then convert back
+        const bodyBuffer = await req.arrayBuffer();
+        init.body = bodyBuffer.byteLength > 0 ? bodyBuffer : null;
       }
 
       const response = await fetch(newUrl.toString(), init);
-      
+
       // Validate response before returning
       if (!response.ok) {
-        console.error(`[SW] Backend error ${response.status}: ${response.statusText} for ${newUrl}`);
-        return new Response(JSON.stringify({
-          type: 'error',
-          status: response.status,
-          error: `Backend server error: ${response.statusText}`
-        }), {
-          status: response.status,
-          headers: { 'Content-Type': 'application/json' }
-        });
+        console.error(
+          `[SW] Backend error ${response.status}: ${response.statusText} for ${newUrl}`
+        );
+        return new Response(
+          JSON.stringify({
+            type: 'error',
+            status: response.status,
+            error: `Backend server error: ${response.statusText}`,
+          }),
+          {
+            status: response.status,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
 
       return response;
     } catch (error) {
       console.error(`[SW] Network error for ${newUrl}:`, error);
-      return new Response(JSON.stringify({
-        type: 'error', 
-        status: 503,
-        error: 'Backend server unreachable'
-      }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          type: 'error',
+          status: 503,
+          error: 'Backend server unreachable',
+        }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
   }
 

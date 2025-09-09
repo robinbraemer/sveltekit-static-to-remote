@@ -32,18 +32,21 @@ export const handle: Handle = async ({ event, resolve }) => {
       }
     } catch (error) {
       console.error(`[Backend] Invalid JSON in remote request:`, error);
-      return new Response(JSON.stringify({
-        type: 'error',
-        status: 400,
-        error: 'Invalid JSON in request body'
-      }), {
-        status: 400,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': isAllowedOrigin ? origin! : '*',
-          'Vary': 'Origin'
+      return new Response(
+        JSON.stringify({
+          type: 'error',
+          status: 400,
+          error: 'Invalid JSON in request body',
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': isAllowedOrigin ? origin! : '*',
+            Vary: 'Origin',
+          },
         }
-      });
+      );
     }
   }
 
