@@ -205,9 +205,9 @@ remotes.push({
 **Why This Works**:
 
 - Both apps use `src/lib/all.remote.ts` → same hash → same endpoint
-- Frontend calls `/_app/remote/ABC123/call` (doesn't exist locally)
-- Service worker intercepts → forwards to `backend.com/_app/remote/ABC123/call`
-- Backend recognizes hash `ABC123` → executes function → returns result
+- Frontend calls `/_app/remote/13eoo5e/call` (doesn't exist locally)
+- Service worker intercepts → forwards to `backend.com/_app/remote/13eoo5e/call`
+- Backend recognizes hash `13eoo5e` → executes function → returns result
 
 **Service Worker Flow**:
 
