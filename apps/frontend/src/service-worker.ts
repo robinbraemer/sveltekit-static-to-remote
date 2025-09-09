@@ -41,26 +41,55 @@ self.addEventListener('fetch', (event) => {
   newUrl.protocol = productionSecure ? 'https:' : 'http:';
 
   async function respond() {
-    const req = event.request.clone();
-    const headers = new Headers(req.headers);
-    // Always mark as remote function call to ensure CORS headers
-    headers.set('X-SvelteKit-Remote', 'true');
+    try {
+      const req = event.request.clone();
+      const headers = new Headers(req.headers);
+      // Always mark as remote function call to ensure CORS headers
+      headers.set('X-SvelteKit-Remote', 'true');
 
-    const init: RequestInit = {
-      method: req.method,
-      headers,
-      credentials: 'include',
-      referrer: req.referrer,
-      referrerPolicy: req.referrerPolicy,
-      redirect: req.redirect,
-      cache: req.cache,
-    };
+      const init: RequestInit = {
+        method: req.method,
+        headers,
+        credentials: 'include',
+        referrer: req.referrer,
+        referrerPolicy: req.referrerPolicy,
+        redirect: req.redirect,
+        cache: req.cache,
+      };
 
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      init.body = await req.blob();
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        // Use text() instead of blob() to avoid encoding issues
+        const bodyText = await req.text();
+        init.body = bodyText || null;
+      }
+
+      const response = await fetch(newUrl.toString(), init);
+      
+      // Validate response before returning
+      if (!response.ok) {
+        console.error(`[SW] Backend error ${response.status}: ${response.statusText} for ${newUrl}`);
+        return new Response(JSON.stringify({
+          type: 'error',
+          status: response.status,
+          error: `Backend server error: ${response.statusText}`
+        }), {
+          status: response.status,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return response;
+    } catch (error) {
+      console.error(`[SW] Network error for ${newUrl}:`, error);
+      return new Response(JSON.stringify({
+        type: 'error', 
+        status: 503,
+        error: 'Backend server unreachable'
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
-
-    return fetch(newUrl.toString(), init);
   }
 
   event.respondWith(respond());

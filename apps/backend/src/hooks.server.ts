@@ -18,6 +18,35 @@ export const handle: Handle = async ({ event, resolve }) => {
   const isGetRequest =
     event.request.method === 'GET' || event.request.method === 'HEAD';
 
+  // Add error handling for malformed requests to remote endpoints
+  if (isRemotePath && event.request.method === 'POST') {
+    try {
+      // Pre-validate request body can be parsed if it's JSON
+      const contentType = event.request.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const cloned = event.request.clone();
+        const text = await cloned.text();
+        if (text) {
+          JSON.parse(text); // Validate it's proper JSON
+        }
+      }
+    } catch (error) {
+      console.error(`[Backend] Invalid JSON in remote request:`, error);
+      return new Response(JSON.stringify({
+        type: 'error',
+        status: 400,
+        error: 'Invalid JSON in request body'
+      }), {
+        status: 400,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': isAllowedOrigin ? origin! : '*',
+          'Vary': 'Origin'
+        }
+      });
+    }
+  }
+
   // Handle OPTIONS preflight for remote function calls (needed when sending custom headers like X-SvelteKit-Remote)
   if (event.request.method === 'OPTIONS') {
     // Echo requested headers if provided, otherwise allow common ones
