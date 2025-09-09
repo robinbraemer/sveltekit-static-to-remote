@@ -24,12 +24,34 @@ const productionHost = 'localhost:5174';
 const productionSecure = !dev;
 
 self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-    if (!url.pathname.startsWith('/_app/remote/')) return;
-    console.log('fetch', event.request);
-    url.host = dev ? 'localhost:5174' : productionHost;
-    url.protocol = productionSecure ? 'https:' : 'http:';
-    const newRequest = new Request(url, event.request);
-    console.log('newRequest', newRequest);
-    event.respondWith(fetch(newRequest));
+  const url = new URL(event.request.url);
+  if (!url.pathname.startsWith('/_app/remote/')) return;
+
+  const newUrl = new URL(event.request.url);
+  newUrl.host = dev ? 'localhost:5174' : productionHost;
+  newUrl.protocol = productionSecure ? 'https:' : 'http:';
+
+  async function respond() {
+    const req = event.request.clone();
+    const headers = new Headers(req.headers);
+    headers.set('X-SvelteKit-Remote', 'true'); // Mark as remote function call
+
+    const init: RequestInit = {
+      method: req.method,
+      headers,
+      credentials: 'include',
+      referrer: req.referrer,
+      referrerPolicy: req.referrerPolicy,
+      redirect: req.redirect,
+      cache: req.cache,
+    };
+
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      init.body = await req.blob();
+    }
+
+    return fetch(newUrl.toString(), init);
+  }
+
+  event.respondWith(respond());
 });

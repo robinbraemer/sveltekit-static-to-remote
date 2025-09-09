@@ -48,6 +48,7 @@ export const logActivity = command(z.string(), async (action) => {
 // 4. PRERENDER - Static data generated at build time
 export const getAppInfo = prerender(async () => {
   console.log('backend: Generating app info at build time');
+  console.log('You might see this in frontend console but prerender will only be called server-side at build/dev time.')
 
   return {
     name: 'SvelteKit Static-to-Remote Demo',
