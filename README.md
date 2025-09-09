@@ -58,7 +58,7 @@ cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 
 **This means**: Static app calls non-existent endpoints → service worker intercepts → backend executes → seamless API!
 
-> **Note**: Query, form, and command functions work perfectly. Prerender functions work but currently bypass caching (call backend at runtime instead of using build-time cached data).
+> **Note**: Query, form, and command functions work perfectly. **Prerender functions currently fail cross-origin** due to service worker unable to reach backend during static serving.
 
 ---
 
@@ -99,19 +99,19 @@ cd apps/frontend && pnpm build && pnpx serve build  # http://localhost:3000
 ### 📊 **Prerender** - Build-time Static
 
 - **Purpose**: Static data generated at build time
-- **Example**: App info, stats, configuration
-- **Status**: ⚠️ **Known limitation**: CORS not supported for prerendered responses (served from cache, bypasses hooks)
+- **Example**: App info, stats, configuration  
+- **Status**: ❌ **Currently unsupported cross-origin** (service worker cannot reach backend during static serving)
 
 ---
 
-## ⚠️ Known Limitation: Prerender Caching
+## ⚠️ Known Limitation: Prerender Cross-Origin
 
 **What Works**: ✅ Prerender functions ARE called during backend build time  
-**What's Missing**: ❌ Static app calls backend instead of using cached build-time data
+**What Fails**: ❌ Static app attempts runtime calls to backend but service worker cannot establish connection
 
-**Root Cause**: Service worker intercepts SvelteKit's Cache API lookups, preventing proper prerender caching behavior.
+**Root Cause**: Prerender functions bypass static cache and attempt cross-origin calls at runtime. Service worker intercepts but cannot reach backend server during static serving.
 
-**🚀 PRs Welcome!** Help improve Cache API integration for true prerender performance benefits.
+**🚀 PRs Welcome!** Help implement proper prerender cache serving or fix cross-origin prerender calls!
 
 ---
 
@@ -174,8 +174,8 @@ const ALLOWED_ORIGINS = [
 
 - **Service worker not working?** DevTools → Application → Service Workers → Update + reload
 - **CORS errors?** Add your frontend origin to `ALLOWED_ORIGINS` in backend hook
-- **JSON parsing errors?** Backend hook handles OPTIONS preflight (already included)
-- **Prerender called at runtime?** Known limitation - Cache API integration needs improvement
+- **JSON parsing errors?** Fixed with improved service worker error handling
+- **Prerender fails to load?** Expected - currently unsupported cross-origin (use query functions instead)
 
 ---
 
@@ -186,7 +186,7 @@ const ALLOWED_ORIGINS = [
 - ✅ **Separate Deployments**: Frontend and backend deploy independently
 - ✅ **Static Hosting**: CDN/GitHub Pages compatible
 - ✅ **Mobile Ready**: Perfect for Tauri/Capacitor apps
-- ⚠️ **Prerender Functions**: Work but need Cache API integration improvements
+- ❌ **Prerender Functions**: Currently unsupported cross-origin (3 out of 4 function types work)
 
 ---
 

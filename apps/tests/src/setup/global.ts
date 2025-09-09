@@ -76,7 +76,7 @@ export default async function setup() {
   console.log('[setup] Building backend...');
   const backendDir = `${root}apps/backend`;
   await runWithTimeout('pnpm', ['build'], backendDir, BUILD_TIMEOUT_MS);
-  
+
   console.log('[setup] Starting backend server...');
   backendProc = spawn('node', ['build/index.js'], {
     cwd: backendDir,
@@ -91,7 +91,7 @@ export default async function setup() {
   console.log('[setup] Building frontend...');
   const frontendDir = `${root}apps/frontend`;
   await runWithTimeout('pnpm', ['build'], frontendDir, BUILD_TIMEOUT_MS);
-  
+
   console.log('[setup] Starting frontend server...');
   frontendProc = spawn('pnpm', ['dlx', 'serve', 'build', '-l', '3010'], {
     cwd: frontendDir,
