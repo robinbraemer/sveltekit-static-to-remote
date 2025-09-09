@@ -146,7 +146,6 @@ const ALLOWED_ORIGINS = [
 export default {
   server: {
     allowedHosts: [
-      'localhost',
       '.trycloudflare.com', // Allow any trycloudflare subdomain
     ]
   }
@@ -194,6 +193,7 @@ surge ./build
 - **✅ Service Worker**: Console logs show interception
 
 ### **🔧 Quick Validation with Curl**
+
 ```bash
 # Test OPTIONS preflight (should return 204 with CORS headers)
 curl -i -H "Origin: https://your-test.surge.sh" \

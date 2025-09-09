@@ -11,6 +11,6 @@ export default defineConfig({
 		// and re-build the frontend and deploy it by running
 		// `surge ./build` and update the
 		// hooks.server.ts to allow the surge domain.
-		allowedHosts: ['grew-def-checks-license.trycloudflare.com']
+		allowedHosts: ['.trycloudflare.com']
 	}
 });

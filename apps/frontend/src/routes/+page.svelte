@@ -44,43 +44,6 @@
       deployments, and serverless architectures.
     </p>
 
-    <!-- Live Stats from Prerender -->
-    <div class="stats-grid">
-      {#if appInfo.loading}
-        <div class="stat-item loading">
-          <div class="stat-value">
-            <div class="spinner"></div>
-          </div>
-          <div class="stat-label">Loading</div>
-        </div>
-        <div class="stat-item loading">
-          <div class="stat-value">•••</div>
-          <div class="stat-label">Loading</div>
-        </div>
-        <div class="stat-item loading">
-          <div class="stat-value">•••</div>
-          <div class="stat-label">Loading</div>
-        </div>
-      {:else if appInfo.ready}
-        <div class="stat-item">
-          <div class="stat-value">{appInfo.current.version}</div>
-          <div class="stat-label">Version</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{appInfo.current.features.length}</div>
-          <div class="stat-label">Function Types</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">✨</div>
-          <div class="stat-label">Magic Level</div>
-        </div>
-      {:else if appInfo.error}
-        <div class="stat-item error">
-          <div class="stat-value">❌</div>
-          <div class="stat-label">Error</div>
-        </div>
-      {/if}
-    </div>
   </div>
 
   <!-- Animated background -->
@@ -260,6 +223,19 @@
               <small>{appInfo.error.message || 'Unknown error'}</small>
             </div>
           </div>
+          <div class="limitation-note">
+            <p>
+              ℹ️ <strong>Expected behavior</strong>: Prerender functions currently fail cross-origin due to service worker limitations.
+            </p>
+            <p>
+              <a href="https://github.com/robinbraemer/sveltekit-static-to-remote#%EF%B8%8F-known-limitation-prerender-cross-origin" target="_blank" rel="noopener">
+                📖 Read about this limitation
+              </a> • 
+              <a href="https://github.com/robinbraemer/sveltekit-static-to-remote/issues" target="_blank" rel="noopener">
+                🚀 PRs welcome to fix
+              </a>
+            </p>
+          </div>
         {/if}
       </div>
     </div>
@@ -347,41 +323,6 @@
     animation: fadeInUp 0.8s ease-out 0.4s both;
   }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-    animation: fadeInUp 0.8s ease-out 0.6s both;
-  }
-
-  .stat-item {
-    text-align: center;
-  }
-
-  .stat-value {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: white;
-    line-height: 1;
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .stat-item.loading .stat-value {
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  .stat-item.error .stat-value {
-    color: #ef4444;
-  }
 
   .error-state {
     display: flex;
@@ -395,6 +336,37 @@
 
   .error-icon {
     font-size: 1.5rem;
+  }
+
+  .limitation-note {
+    background: #fffbeb;
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    color: #92400e;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .limitation-note p {
+    margin: 0 0 0.5rem 0;
+  }
+
+  .limitation-note p:last-child {
+    margin-bottom: 0;
+  }
+
+  .limitation-note a {
+    color: #dc2626;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .limitation-note a:hover {
+    color: #b91c1c;
+    text-decoration: underline;
   }
 
   /* Floating Background Elements */
@@ -873,11 +845,6 @@
 
     .input-group {
       gap: 0.75rem;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
     }
   }
 
