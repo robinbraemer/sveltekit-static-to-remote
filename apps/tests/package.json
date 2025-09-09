@@ -1,0 +1,22 @@
+{
+  "name": "tests",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "echo 'No build needed'",
+    "test": "vitest run --watch=false",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:ui": "playwright test --ui",
+    "start:servers": "node ./src/utils/standalone-start.mjs",
+    "check": "echo 'tests package'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.5.4",
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
+  }
+}

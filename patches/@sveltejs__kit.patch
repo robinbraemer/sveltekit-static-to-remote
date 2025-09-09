@@ -1,0 +1,20 @@
+diff --git a/src/runtime/server/respond.js b/src/runtime/server/respond.js
+index 2e97adaaf441f65355f24b1bbe5a385dbbb4d443..769dfe8e6b34fc3287523b834532f6513b3f30fc 100644
+--- a/src/runtime/server/respond.js
++++ b/src/runtime/server/respond.js
+@@ -79,8 +79,13 @@ export async function internal_respond(request, options, manifest, state) {
+ 
+ 		if (remote_id) {
+ 			if (request.method !== 'GET' && request_origin !== url.origin) {
+-				const message = 'Cross-site remote requests are forbidden';
+-				return json({ message }, { status: 403 });
++				// Allow OPTIONS preflight from any origin (browser doesn't include custom headers)
++				// Allow other methods only if request has service worker header
++				const hasRemoteHeader = request.headers.get('X-SvelteKit-Remote');
++				if (request.method !== 'OPTIONS' && !hasRemoteHeader) {
++					const message = 'Cross-site remote requests are forbidden';
++					return json({ message }, { status: 403 });
++				}
+ 			}
+ 		} else if (options.csrf_check_origin) {
+ 			const forbidden =

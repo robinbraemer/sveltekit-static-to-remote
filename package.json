@@ -1,0 +1,20 @@
+{
+  "name": "sveltekit-static-to-remote",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -C apps/backend build && pnpm -C apps/frontend build",
+    "test": "pnpm -C apps/tests test",
+    "e2e": "pnpm -C apps/tests e2e",
+    "test:all": "pnpm build && pnpm test && pnpm e2e",
+    "dev:backend": "pnpm -C apps/backend dev",
+    "dev:frontend": "pnpm -C apps/frontend dev",
+    "preview:backend": "pnpm -C apps/backend preview",
+    "preview:frontend": "pnpm build && pnpm -C apps/frontend preview",
+    "demo": "echo '🚀 Quick Demo:' && echo '1. Backend: pnpm dev:backend' && echo '2. Frontend: pnpm preview:frontend' && echo '3. Visit: http://localhost:3000'"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "typescript": "^5.5.4"
+  }
+}

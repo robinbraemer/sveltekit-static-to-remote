@@ -17,6 +17,15 @@ const self = globalThis.self as unknown as ServiceWorkerGlobalScope;
 
 const dev = self.location.hostname === 'localhost';
 
+// Force service worker to activate immediately and claim all clients
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force activate new service worker immediately
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim()); // Take control of all clients immediately
+});
+
 // Switch this to your production domain like api.example.com.
 // For now this is the backend dev server.
 const productionHost = 'localhost:5174';
@@ -34,7 +43,8 @@ self.addEventListener('fetch', (event) => {
   async function respond() {
     const req = event.request.clone();
     const headers = new Headers(req.headers);
-    headers.set('X-SvelteKit-Remote', 'true'); // Mark as remote function call
+    // Always mark as remote function call to ensure CORS headers
+    headers.set('X-SvelteKit-Remote', 'true');
 
     const init: RequestInit = {
       method: req.method,

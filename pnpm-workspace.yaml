@@ -1,2 +1,5 @@
 packages:
-  - 'apps/*'
+  - apps/*
+
+patchedDependencies:
+  '@sveltejs/kit': patches/@sveltejs__kit.patch
