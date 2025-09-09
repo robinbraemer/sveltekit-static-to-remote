@@ -48,16 +48,10 @@ export const handle: Handle = async ({ event, resolve }) => {
     if (isAllowedOrigin) {
       res.headers.set('Access-Control-Allow-Origin', origin!);
       res.headers.set('Access-Control-Allow-Credentials', 'true');
-    } else if (
-      !origin &&
-      (event.request.method === 'GET' || event.request.method === 'HEAD')
-    ) {
+    } else if (!origin && isGetRequest) {
       res.headers.set('Access-Control-Allow-Origin', '*');
       // Note: do not set Allow-Credentials with '*'
-    } else if (
-      origin &&
-      (event.request.method === 'GET' || event.request.method === 'HEAD')
-    ) {
+    } else if (origin && isGetRequest) {
       res.headers.set('Access-Control-Allow-Origin', origin);
     }
   }
