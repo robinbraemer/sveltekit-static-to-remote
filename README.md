@@ -31,6 +31,10 @@ In this demo, the static frontend example is deployed on Surge CDN, while the ba
 
 **Perfect for**: Static sites • Mobile apps (Tauri/Capacitor) • CDN deployments • Serverless architectures
 
+<div align="center">
+<img width="602" height="431" alt="image" src="https://github.com/user-attachments/assets/5f1e545f-453f-4c5b-a2e8-8f54dd4a49cb" />
+</div>
+
 ---
 
 ## 🚀 Quick Start
